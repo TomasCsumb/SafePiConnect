@@ -14,3 +14,7 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SafePiConnect"
 include ':app'
+buildscript {
+    ext.kotlin_version = '1.9.0'
+    repositories { mavenCentral() }
+}
