@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 
@@ -28,7 +28,7 @@ class DeviceListActivity : AppCompatActivity() {
     private val discoveredDevices = mutableListOf<String>()
     private lateinit var binding: ActivityDeviceListBinding
     private val aggregator = BleScanResultAggregator()
-    private var bleDevices: List<BleDevice> = listOf()
+    private var bleDevices: List<ServerDevice> = listOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDeviceListBinding.inflate(layoutInflater)
@@ -49,9 +49,7 @@ class DeviceListActivity : AppCompatActivity() {
         }
     }
 
-
     private fun startBleScan() {
-        // lifecycleScope added to stop this function when leaving activity
         lifecycleScope.launch {
             if (ActivityCompat.checkSelfPermission(
                     this@DeviceListActivity,
@@ -68,23 +66,26 @@ class DeviceListActivity : AppCompatActivity() {
                 )
                 return@launch
             }
-            // map used to create a list of devices and their properties
-            // onEach used to update UI to display device info
-            // launchIn used to handle stopping execution of scan
+
             bleScanner.scan()
-                .map { aggregator.aggregateDevices(it) }
+                .map { scanResult ->
+                    aggregator.aggregateDevices(scanResult)
+                }
                 .onEach { devices ->
-                    val deviceList = devices.map { "${it.name ?: "Unknown Device"} - ${it.address}" }
-                    bleDevices = devices;
+                    bleDevices = devices // Assigning the list of devices to bleDevices
                     withContext(Dispatchers.Main) {
-                        discoveredDevices.clear()
-                        discoveredDevices.addAll(deviceList)
-                        listViewAdapter.notifyDataSetChanged()
+                        discoveredDevices.clear() // Clear the discoveredDevices list
+                        discoveredDevices.addAll(devices.map { device ->
+                            val deviceName = device.name ?: "Unknown Device"
+                            "$deviceName - ${device.address}"
+                        }) // Add all devices from devices directly
+                        listViewAdapter.notifyDataSetChanged() // Notify the adapter of the data set change
                     }
                 }
-                .launchIn(lifecycleScope)
+                .launchIn(lifecycleScope) // Launch the flow in the lifecycle scope
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

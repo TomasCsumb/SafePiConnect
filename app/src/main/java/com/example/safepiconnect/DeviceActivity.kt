@@ -7,20 +7,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityDeviceBinding
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 
 class DeviceActivity : AppCompatActivity() {
 
 
     private lateinit var binding: ActivityDeviceBinding
+    private lateinit var clientDevice: ClientBleGatt
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_device)
         binding = ActivityDeviceBinding.inflate(layoutInflater)
         setContentView(binding.root)
         // Warning Using deprecated method
-        val device: BleDevice = intent.getParcelableExtra<BleDevice>("SELECTED_DEVICE")!! as BleDevice
-        device?.let {
+        val serverDevice: ServerDevice = intent.getParcelableExtra<ServerDevice>("SELECTED_DEVICE")!! as ServerDevice
+        serverDevice?.let {
             // Assuming BleDevice has methods getName() and getAddress()
             val name = it.name ?: "Unknown Device"
             val address = it.address
@@ -28,14 +30,15 @@ class DeviceActivity : AppCompatActivity() {
             // Add text views to your table rows
             addDeviceDetailToRow(binding.row0, "Device Name: ", name)
             addDeviceDetailToRow(binding.row1, "MAC Address: ", address)
-
+//            connectToDevice(address, clientDevice)
         }
 
     }
 
-    private fun connectToDevice(selectedDevice: BleDevice) {
+    private fun connectToDevice(address: String, clientDevice: ClientBleGatt) {
         lifecycleScope.launch {
-//            val connection = selectedDevice.connect()
+            clientDevice.reconnect()
+//           val connection =
         }
     }
 
