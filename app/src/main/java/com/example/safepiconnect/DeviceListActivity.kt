@@ -1,8 +1,10 @@
 package com.example.safepiconnect
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Parcelable
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 
@@ -25,6 +28,7 @@ class DeviceListActivity : AppCompatActivity() {
     private val discoveredDevices = mutableListOf<String>()
     private lateinit var binding: ActivityDeviceListBinding
     private val aggregator = BleScanResultAggregator()
+    private var bleDevices: List<BleDevice> = listOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDeviceListBinding.inflate(layoutInflater)
@@ -36,6 +40,13 @@ class DeviceListActivity : AppCompatActivity() {
         binding.listViewDevices.adapter = listViewAdapter  // Access ListView via binding
 
         startBleScan()
+        binding.listViewDevices.setOnItemClickListener { _, _, position, _ ->
+            val selectedDevice = bleDevices[position]
+            val intent = Intent(this, DeviceActivity::class.java).apply {
+                putExtra("SELECTED_DEVICE", selectedDevice as Parcelable)
+            }
+            startActivity(intent)
+        }
     }
 
 
@@ -64,6 +75,7 @@ class DeviceListActivity : AppCompatActivity() {
                 .map { aggregator.aggregateDevices(it) }
                 .onEach { devices ->
                     val deviceList = devices.map { "${it.name ?: "Unknown Device"} - ${it.address}" }
+                    bleDevices = devices;
                     withContext(Dispatchers.Main) {
                         discoveredDevices.clear()
                         discoveredDevices.addAll(deviceList)
