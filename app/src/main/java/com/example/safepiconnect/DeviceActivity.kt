@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityDeviceBinding
+import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 
 class DeviceActivity : AppCompatActivity() {
@@ -27,10 +29,16 @@ class DeviceActivity : AppCompatActivity() {
             addDeviceDetailToRow(binding.row0, "Device Name: ", name)
             addDeviceDetailToRow(binding.row1, "MAC Address: ", address)
 
-
         }
 
     }
+
+    private fun connectToDevice(selectedDevice: BleDevice) {
+        lifecycleScope.launch {
+//            val connection = selectedDevice.connect()
+        }
+    }
+
 
     private fun addDeviceDetailToRow(row: TableRow, label: String, value: String) {
         val labelView = TextView(this).apply { text = label }
