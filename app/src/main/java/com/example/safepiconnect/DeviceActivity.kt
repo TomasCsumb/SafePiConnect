@@ -66,7 +66,7 @@ class DeviceActivity : AppCompatActivity() {
             val readCharacteristic = service?.findCharacteristic(UUID.fromString("51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B"))!!
             val message = readCharacteristic.read().value?.toString(Charsets.UTF_8) ?: ""
             val writeCharacteristic = service?.findCharacteristic(UUID.fromString("52FF12BB-3ED8-46E5-B4F9-D64E2FEC021B"))!!
-            val secretStringMessage = "This is my message"
+            val secretStringMessage = "So anyways, I started blastin"
             val secretMessage = secretStringMessage.toByteArray(Charsets.UTF_8)
             val dataByteArray = DataByteArray(secretMessage)
             writeCharacteristic.write(dataByteArray, BleWriteType.DEFAULT)
