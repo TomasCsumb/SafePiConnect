@@ -41,7 +41,7 @@ class DeviceActivity : AppCompatActivity() {
             val connectionManager = BleDeviceManager(this, address) { bleDeviceManager ->
                 // Now the services are initialized, and you can safely call readChar and writeChar
                 bleDeviceManager.readChar(SERVICE_ID, READ_CHARACTERISTIC_UUID)
-                val message = "Who runs barter town???"
+                val message = "disconnect"
                 bleDeviceManager.writeChar(message, SERVICE_ID, WRITE_CHARACTERISTIC_UUID)
                 /*List of commands for Tomas:
                 * wifi SSID password
