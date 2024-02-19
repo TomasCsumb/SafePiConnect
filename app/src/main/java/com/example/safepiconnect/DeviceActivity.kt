@@ -1,28 +1,13 @@
 package com.example.safepiconnect
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityDeviceBinding
-import kotlinx.coroutines.launch
-import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
-import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattCharacteristic
-import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattServices
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
-import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import java.util.UUID
-import javax.crypto.Cipher
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
-import java.security.GeneralSecurityException
-import com.example.safepiconnect.BleDeviceManager
 
 
 class DeviceActivity : AppCompatActivity() {
@@ -50,6 +35,9 @@ class DeviceActivity : AppCompatActivity() {
             addDeviceDetailToRow(binding.row0, "Device Name: ", name)
             addDeviceDetailToRow(binding.row1, "MAC Address: ", address)
 
+            // Create ble manager for connecting. We must call the methods from within so as to ensure
+            // that the connection is complete before a read or write. This must be done because blocking
+            // the main thread can lead to errors.
             val connectionManager = BleDeviceManager(this, address) { bleDeviceManager ->
                 // Now the services are initialized, and you can safely call readChar and writeChar
                 bleDeviceManager.readChar(SERVICE_ID, READ_CHARACTERISTIC_UUID)

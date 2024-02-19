@@ -1,7 +1,6 @@
 package com.example.safepiconnect
 
 import android.Manifest
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
@@ -19,8 +18,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import java.security.GeneralSecurityException
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+
 
 class BleDeviceManager(
     private val context: Context,
