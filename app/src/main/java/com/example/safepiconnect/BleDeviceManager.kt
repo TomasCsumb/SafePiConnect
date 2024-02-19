@@ -109,16 +109,21 @@ class BleDeviceManager(
 }
 
 object AESUtils {
-    private val AES_KEY = byteArrayOf(
-        0x01.toByte(), 0x23.toByte(), 0x45.toByte(), 0x67.toByte(), 0x89.toByte(), 0xAB.toByte(), 0xCD.toByte(), 0xEF.toByte(),
-        0xFE.toByte(), 0xDC.toByte(), 0xBA.toByte(), 0x98.toByte(), 0x76.toByte(), 0x54.toByte(), 0x32.toByte(), 0x10.toByte(),
-        0x01.toByte(), 0x23.toByte(), 0x45.toByte(), 0x67.toByte(), 0x89.toByte(), 0xAB.toByte(), 0xCD.toByte(), 0xEF.toByte(),
-        0xFE.toByte(), 0xDC.toByte(), 0xBA.toByte(), 0x98.toByte(), 0x76.toByte(), 0x54.toByte(), 0x32.toByte(), 0x10.toByte()
-    )
-    private val IV = byteArrayOf(
-        0x01.toByte(), 0x23.toByte(), 0x45.toByte(), 0x67.toByte(), 0x89.toByte(), 0xAB.toByte(), 0xCD.toByte(), 0xEF.toByte(),
-        0xFE.toByte(), 0xDC.toByte(), 0xBA.toByte(), 0x98.toByte(), 0x76.toByte(), 0x54.toByte(), 0x32.toByte(), 0x10.toByte()
-    )
+    // do not make const because we have to convert these.
+    private val hexKey = "0123456789ABCDEFFEDCBA98765432100123456789ABCDEFFEDCBA9876543210"
+    private val hexIV = "0123456789ABCDEFFEDCBA9876543210"
+
+    private val AES_KEY = hexStringToByteArray(hexKey)
+    private val IV = hexStringToByteArray(hexIV)
+
+    private fun hexStringToByteArray(hexString: String): ByteArray {
+        val len = hexString.length
+        val data = ByteArray(len / 2)
+        for (i in 0 until len step 2) {
+            data[i / 2] = ((Character.digit(hexString[i], 16) shl 4) + Character.digit(hexString[i + 1], 16)).toByte()
+        }
+        return data
+    }
 
     @Throws(GeneralSecurityException::class)
     fun encrypt(plaintext: ByteArray): ByteArray {

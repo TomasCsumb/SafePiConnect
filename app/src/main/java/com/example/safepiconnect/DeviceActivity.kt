@@ -43,6 +43,13 @@ class DeviceActivity : AppCompatActivity() {
                 bleDeviceManager.readChar(SERVICE_ID, READ_CHARACTERISTIC_UUID)
                 val message = "Who runs barter town???"
                 bleDeviceManager.writeChar(message, SERVICE_ID, WRITE_CHARACTERISTIC_UUID)
+                /*List of commands for Tomas:
+                * wifi SSID password
+                * reboot
+                * shutdown
+                * token lkajsdvoiasudboibsomefaketokenfaksjdfk // this one isn't working yet obviously.
+                * // we will get some more going for controlling lights on the RPi
+                * */
             }
         }
     }
