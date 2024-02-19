@@ -2,4 +2,5 @@
     <string name="app_name">SafePiConnect</string>
     <string name="safepi_connect_text">SafePi Connect</string>
     <string name="connect_button_text">Connect</string>
+    <string name="enter_password">Enter Password</string>
 </resources>
