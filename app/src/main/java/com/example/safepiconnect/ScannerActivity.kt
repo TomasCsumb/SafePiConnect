@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
-import com.example.safepiconnect.databinding.ActivityDeviceListBinding
+import com.example.safepiconnect.databinding.ActivityScannerBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -26,12 +26,12 @@ class ScannerActivity : AppCompatActivity() {
     private lateinit var bleScanner: BleScanner
     private lateinit var listViewAdapter: ArrayAdapter<String>
     private val discoveredDevices = mutableListOf<String>()
-    private lateinit var binding: ActivityDeviceListBinding
+    private lateinit var binding: ActivityScannerBinding
     private val aggregator = BleScanResultAggregator()
     private var bleDevices: List<ServerDevice> = listOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDeviceListBinding.inflate(layoutInflater)
+        binding = ActivityScannerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Rest of your initialization code
@@ -85,7 +85,6 @@ class ScannerActivity : AppCompatActivity() {
                 .launchIn(lifecycleScope) // Launch the flow in the lifecycle scope
         }
     }
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

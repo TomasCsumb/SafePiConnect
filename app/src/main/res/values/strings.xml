@@ -2,5 +2,9 @@
     <string name="app_name">SafePiConnect</string>
     <string name="safepi_connect_text">SafePi Connect</string>
     <string name="scan_button_text">Scan</string>
-    <string name="connect_button_text">Scan</string>
+    <string name="connect_button_text">Connect</string>
+    <string name="menu_button_text">Main Menu</string>
+    <string name="controls_button_text">Controls</string>
+    <string name="provision_button_text">Provision Device</string>
+
 </resources>

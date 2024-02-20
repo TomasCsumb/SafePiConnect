@@ -9,13 +9,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.connectButton.setOnClickListener{
-            val intent = Intent(this, ScannerActivity::class.java)
+
+        // menu button for now
+        binding.menuButton.setOnClickListener{
+            val intent = Intent(this, MainMenuActivity::class.java)
             startActivity(intent)
         }
     }
