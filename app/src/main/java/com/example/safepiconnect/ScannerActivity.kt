@@ -29,6 +29,7 @@ class ScannerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityScannerBinding
     private val aggregator = BleScanResultAggregator()
     private var bleDevices: List<ServerDevice> = listOf()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityScannerBinding.inflate(layoutInflater)
@@ -39,7 +40,7 @@ class ScannerActivity : AppCompatActivity() {
         listViewAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, discoveredDevices)
         binding.listViewDevices.adapter = listViewAdapter  // Access ListView via binding
 
-        startBleScan()
+        startBleScanAggregator()
         binding.listViewDevices.setOnItemClickListener { _, _, position, _ ->
             val selectedDevice = bleDevices[position]
             val intent = Intent(this, DeviceActivity::class.java).apply {
@@ -49,7 +50,7 @@ class ScannerActivity : AppCompatActivity() {
         }
     }
 
-    private fun startBleScan() {
+    private fun startBleScanAggregator() {
         lifecycleScope.launch {
             if (ActivityCompat.checkSelfPermission(
                     this@ScannerActivity,
@@ -95,7 +96,7 @@ class ScannerActivity : AppCompatActivity() {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 // Permissions granted, start BLE scanning
-                startBleScan()
+                startBleScanAggregator()
             } else {
                 // Permissions not granted
                 Toast.makeText(this, "Permissions not granted", Toast.LENGTH_SHORT).show()

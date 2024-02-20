@@ -4,13 +4,10 @@ import android.os.Bundle
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityDeviceBinding
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
-import java.util.UUID
 
 
 class DeviceActivity : AppCompatActivity() {
