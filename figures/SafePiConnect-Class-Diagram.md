@@ -57,11 +57,13 @@ classDiagram
     }
     
     ScannerActivity --> DeviceActivity
-    DeviceActivity --> BleDeviceManager
     MainActivity --> MainMenuActivity
     MainMenuActivity --> ScannerActivity
     MainMenuActivity --> AdminControlsActivity
-    BleDeviceManager --* AESUtils : contains
+    DeviceActivity --> BleDeviceManager
+    MainMenuActivity --> BleDeviceManager
     AdminControlsActivity --> BleDeviceManager
+    BleDeviceManager --* AESUtils : contains
+
 
 ```

@@ -46,13 +46,7 @@ class DeviceActivity : AppCompatActivity() {
                     bleDeviceManager.readChar(BleDeviceManager.SERVICE_ID, BleDeviceManager.READ_CHARACTERISTIC_UUID)
                     val message = "hey hey hey"
                     bleDeviceManager.writeChar(message, BleDeviceManager.SERVICE_ID, BleDeviceManager.WRITE_CHARACTERISTIC_UUID)
-                    /*List of commands for Tomas:
-                    * wifi SSID password
-                    * reboot
-                    * shutdown
-                    * token lkajsdvoiasudboibsomefaketokenfaksjdfk // this one isn't working yet obviously.
-                    * // we will get some more going for controlling lights on the RPi
-                    * */
+                    // disconnect when done
                     bleDeviceManager.disconnect()
                 }
             }
