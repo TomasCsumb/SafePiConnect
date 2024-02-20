@@ -23,7 +23,7 @@
             android:name=".DeviceActivity"
             android:exported="false" />
         <activity
-            android:name=".DeviceListActivity"
+            android:name=".ScannerActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

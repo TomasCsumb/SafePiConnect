@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
+import com.example.safepiconnect.databinding.ActivityDeviceBinding
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
@@ -18,7 +20,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import java.security.GeneralSecurityException
-
+import java.util.concurrent.atomic.AtomicInteger
 
 class BleDeviceManager(
     private val context: Context,
@@ -26,6 +28,8 @@ class BleDeviceManager(
     private val onServicesInitialized: (BleDeviceManager) -> Unit // Callback function with BleDeviceManager as parameter
 ) {
     private lateinit var services: ClientBleGattServices
+    private var connection: ClientBleGatt? = null
+    val activeOperations = AtomicInteger(0)
     private val lifecycleScope: LifecycleCoroutineScope by lazy {
         (context as? AppCompatActivity)?.lifecycleScope ?: throw IllegalArgumentException("Context must be an AppCompatActivity")
     }
@@ -47,64 +51,74 @@ class BleDeviceManager(
         }
     }
 
+    fun disconnect() {
+        lifecycleScope.launch {
+            // Wait for all operations to complete
+            while (activeOperations.get() > 0) {
+                delay(100)  // Check every 100ms
+            }
+            connection?.disconnect()
+            Log.d(TAG, "Disconnected from the device.")
+        }
+    }
+
+
     fun readChar(serviceID: UUID, readCharUUID: UUID) {
         if (!::services.isInitialized) {
-            // Services not initialized yet, return or handle accordingly
             Log.e(TAG, "Services not initialized yet")
             return
         }
 
         lifecycleScope.launch {
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {}
-            val service = services.findService(serviceID) ?: throw IllegalStateException("Service not found")
-            val readChar = service.findCharacteristic(readCharUUID) ?: throw IllegalStateException("Read characteristic not found")
-            val cipherValue = readChar.read()?.value
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                activeOperations.incrementAndGet()
+                try {
+                    val service = services.findService(serviceID) ?: throw IllegalStateException("Service not found")
+                    val readChar = service.findCharacteristic(readCharUUID) ?: throw IllegalStateException("Read characteristic not found")
+                    val cipherValue = readChar.read()?.value
 
-            cipherValue?.let {
-                val decryptedMessage = AESUtils.decrypt(it)
-                Log.d(TAG, "Decrypted Message: ${decryptedMessage.toString(Charsets.UTF_8)}")
-            } ?: Log.e(TAG, "Cipher value is null")
+                    cipherValue?.let {
+                        val decryptedMessage = AESUtils.decrypt(it)
+                        Log.d(TAG, "Decrypted Message: ${decryptedMessage.toString(Charsets.UTF_8)}")
+                    } ?: Log.e(TAG, "Cipher value is null")
+                } finally {
+                    activeOperations.decrementAndGet()
+                }
+            }
         }
     }
 
     fun writeChar(message: String, serviceID: UUID, writeCharUUID: UUID) {
         if (!::services.isInitialized) {
-            // Services not initialized yet, return or handle accordingly
             Log.e(TAG, "Services not initialized yet")
             return
         }
 
         lifecycleScope.launch {
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // Handle lack of permissions here
-                return@launch
-            }
-
-            val service = services.findService(serviceID) ?: throw IllegalStateException("Service not found")
-            val writeChar = service.findCharacteristic(writeCharUUID) ?: throw IllegalStateException("Write characteristic not found")
-            val plainText = message.toByteArray(Charsets.UTF_8)
-            try {
-                val encryptedText = AESUtils.encrypt(plainText)
-                val dataByteArray = DataByteArray(encryptedText)
-                writeChar.write(dataByteArray, BleWriteType.DEFAULT)
-                Log.d(TAG, "Encrypted message written to characteristic")
-            } catch (e: GeneralSecurityException) {
-                Log.e(TAG, "Error encrypting message: ${e.localizedMessage}")
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                activeOperations.incrementAndGet()
+                try {
+                    val service = services.findService(serviceID) ?: throw IllegalStateException("Service not found")
+                    val writeChar = service.findCharacteristic(writeCharUUID) ?: throw IllegalStateException("Write characteristic not found")
+                    val plainText = message.toByteArray(Charsets.UTF_8)
+                    val encryptedText = AESUtils.encrypt(plainText)
+                    val dataByteArray = DataByteArray(encryptedText)
+                    writeChar.write(dataByteArray, BleWriteType.DEFAULT)
+                    Log.d(TAG, "Encrypted message written to characteristic")
+                } catch (e: GeneralSecurityException) {
+                    Log.e(TAG, "Error encrypting message: ${e.localizedMessage}")
+                } finally {
+                    activeOperations.decrementAndGet()
+                }
             }
         }
     }
 
-
     companion object {
         private const val TAG = "BleDeviceManager"
+        val SERVICE_ID = UUID.fromString("A07498CA-AD5B-474E-940D-16F1FBE7E8CD")
+        val READ_CHARACTERISTIC_UUID = UUID.fromString("51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B")
+        val WRITE_CHARACTERISTIC_UUID = UUID.fromString("52FF12BB-3ED8-46E5-B4F9-D64E2FEC021B")
     }
 }
 

@@ -21,7 +21,7 @@ import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 
-class DeviceListActivity : AppCompatActivity() {
+class ScannerActivity : AppCompatActivity() {
 
     private lateinit var bleScanner: BleScanner
     private lateinit var listViewAdapter: ArrayAdapter<String>
@@ -52,15 +52,15 @@ class DeviceListActivity : AppCompatActivity() {
     private fun startBleScan() {
         lifecycleScope.launch {
             if (ActivityCompat.checkSelfPermission(
-                    this@DeviceListActivity,
+                    this@ScannerActivity,
                     Manifest.permission.BLUETOOTH_SCAN
                 ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
-                    this@DeviceListActivity,
+                    this@ScannerActivity,
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
-                    this@DeviceListActivity,
+                    this@ScannerActivity,
                     arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT),
                     REQUEST_CODE_PERMISSIONS
                 )
