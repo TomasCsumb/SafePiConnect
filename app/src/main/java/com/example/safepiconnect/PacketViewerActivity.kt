@@ -32,27 +32,34 @@ class PacketViewerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_packet_viewer)
 
+        // Initialize views
         packetDataTextView = findViewById(R.id.packetDataTextView)
         scrollView = findViewById(R.id.scrollView)
         val scrollToggleButton: Button = findViewById(R.id.scrollToggle)
 
+        // Toggle auto-scroll
         scrollToggleButton.setOnClickListener {
             autoScrollToBottom = !autoScrollToBottom
             scrollToggleButton.text = if (autoScrollToBottom) "Auto Scroll" else "Manual Scroll"
         }
 
-        // Check for BLUETOOTH_SCAN permission
+        // Request necessary permissions
+        requestBluetoothPermissions()
+    }
+
+    private fun requestBluetoothPermissions() {
+        val requiredPermissions = mutableListOf<String>()
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_SCAN), PERMISSION_REQUEST_CODE_BLUETOOTH_SCAN)
-            Toast.makeText(this@PacketViewerActivity, "Permission Denied", Toast.LENGTH_SHORT).show()
+            requiredPermissions.add(Manifest.permission.BLUETOOTH_SCAN)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            requiredPermissions.add(Manifest.permission.BLUETOOTH_CONNECT)
         }
 
-        // Check for BLUETOOTH_CONNECT permission on Android 12 and above
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE_BLUETOOTH_CONNECT)
-            Toast.makeText(this@PacketViewerActivity, "Permission Denied", Toast.LENGTH_SHORT).show()
+        if (requiredPermissions.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, requiredPermissions.toTypedArray(), PERMISSION_REQUEST_CODE_BLUETOOTH_SCAN)
         } else {
-            startScanning()  // Start scanning if all permissions are granted
+            startScanning() // Start scanning if all permissions are granted
         }
     }
 
