@@ -1,5 +1,6 @@
 package com.example.safepiconnect
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TableRow
 import android.widget.TextView
@@ -51,6 +52,11 @@ class DeviceActivity : AppCompatActivity() {
                 * // we will get some more going for controlling lights on the RPi
                 * */
             }
+        }
+        binding.magicalButton.setOnClickListener{
+            val intent = Intent(this, PassWiFiActivity::class.java).apply {
+            }
+            startActivity(intent)
         }
     }
 

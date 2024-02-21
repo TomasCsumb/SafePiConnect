@@ -1,8 +1,8 @@
 package com.example.safepiconnect
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.example.safepiconnect.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -18,12 +18,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, DeviceListActivity::class.java)
             startActivity(intent)
         }
-    }
-
-    private fun setUpVariables() {
-
-        // You can now use connectButton for further operations
-        // Example: connectButton.setOnClickListener { ... }
+        binding.wifiButton.setOnClickListener{
+            val wifiintent = Intent(this, PassWiFiActivity::class.java)
+            startActivity(wifiintent)
+        }
     }
 }
 
