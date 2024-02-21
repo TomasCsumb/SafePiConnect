@@ -30,5 +30,10 @@ class MainMenuActivity : AppCompatActivity() {
             val intent = Intent(this, AdminControlsActivity::class.java)
             startActivity(intent)
         }
+
+        binding.snifferButton.setOnClickListener{
+            val intent = Intent(this, PacketViewerActivity::class.java)
+            startActivity(intent)
+        }
     }
 }

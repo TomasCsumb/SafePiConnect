@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleCoroutineScope
@@ -41,12 +42,14 @@ class BleDeviceManager(
         lifecycleScope.launch {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 Log.e(TAG, "Bluetooth Connect permission not granted")
+                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
                 return@launch
             }
 
             val connection = ClientBleGatt.connect(context, address, this)
             services = connection.discoverServices() // Assign to class-level property
             onServicesInitialized(this@BleDeviceManager) // Callback after initialization, passing the current instance
+            Toast.makeText(context, "Successcully Connected", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -58,6 +61,7 @@ class BleDeviceManager(
             }
             connection?.disconnect()
             Log.d(TAG, "Disconnected from the device.")
+            Toast.makeText(context, "Device Disconnected", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -112,6 +116,7 @@ class BleDeviceManager(
             }
         }
     }
+
 
     companion object {
         private const val TAG = "BleDeviceManager"

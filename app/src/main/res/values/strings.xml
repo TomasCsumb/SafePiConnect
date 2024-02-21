@@ -5,8 +5,8 @@
     <string name="connect_button_text">Connect</string>
     <string name="menu_button_text">Main Menu</string>
     <string name="controls_button_text">Controls</string>
+    <string name="sniffer_button_text">Sniffer</string>
     <string name="provision_button_text">Provision Device</string>
     <string name="provision_loading_text">Provisioning In Progress</string>
-
-
+    <string name="disconnect">Disconnect</string>
 </resources>
