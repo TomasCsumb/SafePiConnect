@@ -29,6 +29,9 @@
             android:name=".MainMenuActivity"
             android:exported="false" />
         <activity
+            android:name=".ProvisionLoading"
+            android:exported="false" />
+        <activity
             android:name=".AdminControlsActivity"
             android:exported="false" />
         <activity
