@@ -30,35 +30,7 @@ class PacketViewerActivity : AppCompatActivity() {
     private var autoScrollToBottom = true
     private var deviceNameFilter: String = ""
     private var rssiFilter: Int = -100
-
-    private val scanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            if (ContextCompat.checkSelfPermission(this@PacketViewerActivity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                return
-            }
-
-            val deviceName = result.device.name ?: "Unknown Device"
-            val deviceAddress = result.device.address
-            val rssi = result.rssi
-
-            if (deviceName.contains(deviceNameFilter, ignoreCase = true) && rssi >= rssiFilter) {
-                val timestampMillis = result.timestampNanos / 1_000_000
-                val humanReadableTimestamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date(timestampMillis))
-                val packetInfo = """
-                    $deviceName ($deviceAddress)
-                    RSSI: $rssi
-                    Timestamp: $humanReadableTimestamp
-                """.trimIndent()
-
-                runOnUiThread {
-                    binding.packetDataTextView.append("$packetInfo\n\n")
-                    if (autoScrollToBottom) {
-                        binding.scrollView.post { binding.scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
-                    }
-                }
-            }
-        }
-    }
+    private var namedOnlyFilter = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,10 +59,14 @@ class PacketViewerActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
+        binding.namedOnlyCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            namedOnlyFilter = isChecked
+        }
+
         binding.rangeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 rssiFilter = -100 + progress
-                binding.seekBarValue.text = "RSSI: $rssiFilter"
+                binding.seekBarValue.text = "$rssiFilter"
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -112,6 +88,43 @@ class PacketViewerActivity : AppCompatActivity() {
             startScanning()
         }
     }
+
+    private val scanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            super.onScanResult(callbackType, result)
+
+            // Extract the device name from the result. Use "Unknown Device" as a fallback.
+            val deviceName = result.device.name ?: "Unknown Device"
+            val deviceAddress = result.device.address
+            val rssi = result.rssi
+            val timestampMillis = result.timestampNanos / 1_000_000 // Convert nanoseconds to milliseconds
+            val humanReadableTimestamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date(timestampMillis))
+
+            val isNamedDevice = deviceName != "Unknown Device"
+
+            if (deviceName.contains(deviceNameFilter, ignoreCase = true) &&
+                rssi >= rssiFilter &&
+                (!namedOnlyFilter || isNamedDevice)) {
+
+                val packetInfo = """
+                $deviceName ($deviceAddress)
+                RSSI: $rssi
+                Timestamp: $humanReadableTimestamp
+            """.trimIndent()
+
+                runOnUiThread {
+                    // Accessing the TextView through binding
+                    binding.packetDataTextView.append("$packetInfo\n\n")
+
+                    // Auto-scroll to the bottom only if autoScrollToBottom is true
+                    if (autoScrollToBottom) {
+                        binding.scrollView.post { binding.scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
+                    }
+                }
+            }
+        }
+    }
+
 
     private fun startScanning() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
