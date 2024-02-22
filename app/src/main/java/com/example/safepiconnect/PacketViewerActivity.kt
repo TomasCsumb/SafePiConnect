@@ -9,19 +9,25 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ScrollView
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.safepiconnect.databinding.ActivityMainBinding
+import com.example.safepiconnect.databinding.ActivityPacketViewerBinding
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class PacketViewerActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityPacketViewerBinding
     private lateinit var packetDataTextView: TextView
     private lateinit var scrollView: ScrollView
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
@@ -30,18 +36,44 @@ class PacketViewerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_packet_viewer)
+        binding = ActivityPacketViewerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // Initialize views
-        packetDataTextView = findViewById(R.id.packetDataTextView)
-        scrollView = findViewById(R.id.scrollView)
-        val scrollToggleButton: Button = findViewById(R.id.scrollToggle)
+        // Initialize views from the binding
+        packetDataTextView = binding.packetDataTextView
+        scrollView = binding.scrollView
 
         // Toggle auto-scroll
-        scrollToggleButton.setOnClickListener {
+        binding.scrollToggle.setOnClickListener {
             autoScrollToBottom = !autoScrollToBottom
-            scrollToggleButton.text = if (autoScrollToBottom) "Auto Scroll" else "Manual Scroll"
+            binding.scrollToggle.text = if (autoScrollToBottom) "Stop Auto Scroll" else "Auto Scroll"
         }
+
+        // Filter button click listener
+        binding.filterButton.setOnClickListener {
+            if (binding.filterOptionsLayout.visibility == View.GONE) {
+                binding.filterOptionsLayout.visibility = View.VISIBLE
+            } else {
+                binding.filterOptionsLayout.visibility = View.GONE
+            }
+        }
+
+        // seel bar that filters the RSSI
+        binding.rangeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val adjustedValue = -100 + progress // This will convert the range 0-50 to -100 to -50
+                binding.seekBarValue.text = adjustedValue.toString()
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                // Optional
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                // Optional
+            }
+        })
+
 
         // Request necessary permissions
         requestBluetoothPermissions()
@@ -85,7 +117,7 @@ class PacketViewerActivity : AppCompatActivity() {
 
             // Constructing a detailed packet info string
             val packetInfo = """
-            Device: $deviceName ($deviceAddress)
+            $deviceName ($deviceAddress)
             RSSI: $rssi
             Timestamp: $humanReadableTimestamp
             Service UUIDs: $serviceUuids

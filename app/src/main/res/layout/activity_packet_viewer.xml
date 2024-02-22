@@ -8,18 +8,90 @@
 
     <Button
         android:id="@+id/scrollToggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="240dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@android:color/holo_green_light"
         android:text="Stop Auto Scroll"
+        app:layout_constraintEnd_toStartOf="@+id/filterButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/filterButton"
+        android:layout_width="86dp"
+        android:layout_height="57dp"
+        android:layout_marginStart="12dp"
+        android:backgroundTint="@android:color/darker_gray"
+        android:text="Filter"
+        app:layout_constraintBottom_toBottomOf="@+id/scrollToggle"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/scrollToggle"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintVertical_bias="1.0" />
+
+    <LinearLayout
+        android:id="@+id/filterOptionsLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@android:color/black"
+        android:elevation="4dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/scrollToggle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <EditText
+            android:id="@+id/editTextOption1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search by Name"/>
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/leftLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RSSI:"
+                android:textSize="16sp"
+                android:layout_alignParentStart="true" />
+
+            <SeekBar
+                android:id="@+id/rangeSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="50"
+                android:layout_toEndOf="@id/leftLabel"
+                android:layout_marginStart="8dp"
+                android:layout_alignBaseline="@id/leftLabel" />
+
+            <TextView
+                android:id="@+id/seekBarValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/rangeSeekBar"
+                android:layout_marginTop="8dp"
+                android:layout_alignStart="@id/rangeSeekBar"
+                android:text="-100"
+                android:textSize="16sp" />
+        </RelativeLayout>
+
+
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/scrollToggle"
+        app:layout_constraintTop_toBottomOf="@+id/filterOptionsLayout"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
@@ -28,5 +100,4 @@
             android:layout_height="wrap_content"
             android:padding="16dp" />
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -45,6 +45,9 @@ class DeviceActivity : AppCompatActivity() {
     private fun setConnectButtonClickListener(address: String) {
         binding.connectButton.setOnClickListener {
             if (!isConnected) {
+                //sho progress bar
+                binding.progressBar.visibility = View.VISIBLE
+
                 bleDeviceManager = BleDeviceManager(this, address) {
                     // Connection successful
                     isConnected = true
@@ -63,6 +66,7 @@ class DeviceActivity : AppCompatActivity() {
         if (isConnected) {
             val logTextView = findViewById<TextView>(R.id.logTextView)
             logTextView.visibility = View.VISIBLE
+            binding.progressBar.visibility = View.GONE
             binding.connectButton.text = getString(R.string.disconnect)
             binding.connectButton.setBackgroundColor(ContextCompat.getColor(this, R.color.light_red))
         } else {

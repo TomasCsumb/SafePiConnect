@@ -9,8 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattServices
@@ -25,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class BleDeviceManager(
     private val context: Context,
     private val address: String,
-    private val onServicesInitialized: (BleDeviceManager) -> Unit // Callback function with BleDeviceManager as parameter
+    private val onServicesInitialized: (BleDeviceManager) -> Unit
 ) {
     private lateinit var services: ClientBleGattServices
     private var connection: ClientBleGatt? = null
@@ -39,53 +41,62 @@ class BleDeviceManager(
     }
 
     private fun connectToDevice() {
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 Log.e(TAG, "Bluetooth Connect permission not granted")
-                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+                }
                 return@launch
             }
 
-            val connection = ClientBleGatt.connect(context, address, this)
-            services = connection.discoverServices() // Assign to class-level property
-            onServicesInitialized(this@BleDeviceManager) // Callback after initialization, passing the current instance
-            Toast.makeText(context, "Successcully Connected", Toast.LENGTH_SHORT).show()
+            // Make a local immutable copy of the mutable property
+            val localConnection = ClientBleGatt.connect(context, address, this)
+            connection = localConnection
+
+            // Use the local immutable copy for operations
+            services = localConnection.discoverServices()
+            withContext(Dispatchers.Main) {
+                onServicesInitialized(this@BleDeviceManager)
+            }
         }
     }
 
     fun disconnect() {
-        lifecycleScope.launch {
-            // Wait for all operations to complete
+        lifecycleScope.launch(Dispatchers.IO) {
             while (activeOperations.get() > 0) {
-                delay(100)  // Check every 100ms
+                delay(100)
             }
             connection?.disconnect()
             Log.d(TAG, "Disconnected from the device.")
-            Toast.makeText(context, "Device Disconnected", Toast.LENGTH_SHORT).show()
         }
     }
 
     fun readChar(serviceID: UUID, readCharUUID: UUID) {
-        if (!::services.isInitialized) {
-            Log.e(TAG, "Services not initialized yet")
-            return
-        }
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (!::services.isInitialized) {
+                Log.e(TAG, "Services not initialized yet")
+                return@launch
+            }
 
-        lifecycleScope.launch {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                activeOperations.incrementAndGet()
-                try {
-                    val service = services.findService(serviceID) ?: throw IllegalStateException("Service not found")
-                    val readChar = service.findCharacteristic(readCharUUID) ?: throw IllegalStateException("Read characteristic not found")
-                    val cipherValue = readChar.read()?.value
+            // Ensure permissions are checked on the main thread if needed
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Log.e(TAG, "Bluetooth Connect permission not granted")
+                return@launch
+            }
 
-                    cipherValue?.let {
-                        val decryptedMessage = AESUtils.decrypt(it)
-                        Log.d(TAG, "Decrypted Message: ${decryptedMessage.toString(Charsets.UTF_8)}")
-                    } ?: Log.e(TAG, "Cipher value is null")
-                } finally {
-                    activeOperations.decrementAndGet()
-                }
+            activeOperations.incrementAndGet()
+            try {
+                val service = services.findService(serviceID) ?: throw IllegalStateException("Service not found")
+                val readChar = service.findCharacteristic(readCharUUID) ?: throw IllegalStateException("Read characteristic not found")
+                val cipherValue = readChar.read()?.value
+
+                cipherValue?.let {
+                    val decryptedMessage = AESUtils.decrypt(it)
+                    Log.d(TAG, "Decrypted Message: ${decryptedMessage.toString(Charsets.UTF_8)}")
+                } ?: Log.e(TAG, "Cipher value is null")
+            } finally {
+                activeOperations.decrementAndGet()
             }
         }
     }
@@ -115,7 +126,6 @@ class BleDeviceManager(
             }
         }
     }
-
 
     companion object {
         private const val TAG = "BleDeviceManager"
