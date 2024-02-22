@@ -42,6 +42,7 @@ class PacketViewerActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
+        // function for setting up the layout buttons and menues
         binding.scrollToggle.setOnClickListener {
             autoScrollToBottom = !autoScrollToBottom
             binding.scrollToggle.text = if (autoScrollToBottom) "Stop Auto Scroll" else "Auto Scroll"

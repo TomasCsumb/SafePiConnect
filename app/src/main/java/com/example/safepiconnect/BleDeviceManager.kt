@@ -45,7 +45,6 @@ class BleDeviceManager(
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 Log.e(TAG, "Bluetooth Connect permission not granted")
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
                 }
                 return@launch
             }

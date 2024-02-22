@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityScannerBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -73,13 +74,17 @@ class ScannerActivity : AppCompatActivity() {
             }
 
             bleScanner.scan()
+                .filter { scanResult ->
+                    (scanResult.data?.rssi ?: Int.MIN_VALUE) > -90
+                }
                 .map { scanResult ->
                     aggregator.aggregateDevices(scanResult)
                 }
+
                 .onEach { devices ->
                     bleDevices = devices // Assigning the list of devices to bleDevices
                     withContext(Dispatchers.Main) {
-                        discoveredDevices.clear() // Clear the discoveredDevices list
+                        discoveredDevices.clear()
                         discoveredDevices.addAll(devices.map { device ->
                             val deviceName = device.name ?: "Unknown Device"
                             "$deviceName - ${device.address}"
