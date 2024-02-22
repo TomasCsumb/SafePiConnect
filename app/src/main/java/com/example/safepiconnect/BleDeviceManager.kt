@@ -65,7 +65,6 @@ class BleDeviceManager(
         }
     }
 
-
     fun readChar(serviceID: UUID, readCharUUID: UUID) {
         if (!::services.isInitialized) {
             Log.e(TAG, "Services not initialized yet")
