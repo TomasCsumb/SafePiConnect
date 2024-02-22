@@ -12,6 +12,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityScannerBinding
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -29,6 +30,8 @@ class ScannerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityScannerBinding
     private val aggregator = BleScanResultAggregator()
     private var bleDevices: List<ServerDevice> = listOf()
+    private var scanJob: Job? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityScannerBinding.inflate(layoutInflater)
@@ -45,6 +48,8 @@ class ScannerActivity : AppCompatActivity() {
             val intent = Intent(this, DeviceActivity::class.java).apply {
                 putExtra("SELECTED_DEVICE", selectedDevice as Parcelable)
             }
+            // stop scanner when entering here
+            scanJob?.cancel()
             startActivity(intent)
         }
     }
@@ -101,6 +106,11 @@ class ScannerActivity : AppCompatActivity() {
                 Toast.makeText(this, "Permissions not granted", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        scanJob?.cancel()
     }
 
     companion object {
