@@ -8,75 +8,93 @@ import android.bluetooth.le.ScanResult
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.ScrollView
 import android.widget.SeekBar
-import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.safepiconnect.databinding.ActivityMainBinding
 import com.example.safepiconnect.databinding.ActivityPacketViewerBinding
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 class PacketViewerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPacketViewerBinding
-    private lateinit var packetDataTextView: TextView
-    private lateinit var scrollView: ScrollView
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private var bluetoothLeScanner: BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner
     private var autoScrollToBottom = true
+    private var deviceNameFilter: String = ""
+    private var rssiFilter: Int = -100
+
+    private val scanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            if (ContextCompat.checkSelfPermission(this@PacketViewerActivity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                return
+            }
+
+            val deviceName = result.device.name ?: "Unknown Device"
+            val deviceAddress = result.device.address
+            val rssi = result.rssi
+
+            if (deviceName.contains(deviceNameFilter, ignoreCase = true) && rssi >= rssiFilter) {
+                val timestampMillis = result.timestampNanos / 1_000_000
+                val humanReadableTimestamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date(timestampMillis))
+                val packetInfo = """
+                    $deviceName ($deviceAddress)
+                    RSSI: $rssi
+                    Timestamp: $humanReadableTimestamp
+                """.trimIndent()
+
+                runOnUiThread {
+                    binding.packetDataTextView.append("$packetInfo\n\n")
+                    if (autoScrollToBottom) {
+                        binding.scrollView.post { binding.scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
+                    }
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPacketViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize views from the binding
-        packetDataTextView = binding.packetDataTextView
-        scrollView = binding.scrollView
+        setupViews()
+        requestBluetoothPermissions()
+    }
 
-        // Toggle auto-scroll
+    private fun setupViews() {
         binding.scrollToggle.setOnClickListener {
             autoScrollToBottom = !autoScrollToBottom
             binding.scrollToggle.text = if (autoScrollToBottom) "Stop Auto Scroll" else "Auto Scroll"
         }
 
-        // Filter button click listener
         binding.filterButton.setOnClickListener {
-            if (binding.filterOptionsLayout.visibility == View.GONE) {
-                binding.filterOptionsLayout.visibility = View.VISIBLE
-            } else {
-                binding.filterOptionsLayout.visibility = View.GONE
-            }
+            binding.filterOptionsLayout.visibility = if (binding.filterOptionsLayout.visibility == View.GONE) View.VISIBLE else View.GONE
         }
 
-        // seel bar that filters the RSSI
-        binding.rangeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val adjustedValue = -100 + progress // This will convert the range 0-50 to -100 to -50
-                binding.seekBarValue.text = adjustedValue.toString()
+        binding.editTextOption1.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                deviceNameFilter = s.toString()
             }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                // Optional
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                // Optional
-            }
+            override fun afterTextChanged(s: Editable?) {}
         })
 
-
-        // Request necessary permissions
-        requestBluetoothPermissions()
+        binding.rangeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                rssiFilter = -100 + progress
+                binding.seekBarValue.text = "RSSI: $rssiFilter"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
 
     private fun requestBluetoothPermissions() {
@@ -91,72 +109,23 @@ class PacketViewerActivity : AppCompatActivity() {
         if (requiredPermissions.isNotEmpty()) {
             ActivityCompat.requestPermissions(this, requiredPermissions.toTypedArray(), PERMISSION_REQUEST_CODE_BLUETOOTH_SCAN)
         } else {
-            startScanning() // Start scanning if all permissions are granted
-        }
-    }
-
-    private val scanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            super.onScanResult(callbackType, result)
-
-            // stupid permissions
-            if (ContextCompat.checkSelfPermission(this@PacketViewerActivity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this@PacketViewerActivity, arrayOf(Manifest.permission.BLUETOOTH_SCAN), PERMISSION_REQUEST_CODE_BLUETOOTH_SCAN)
-                Toast.makeText(this@PacketViewerActivity, "Permission Denied", Toast.LENGTH_SHORT).show()
-            }
-            val deviceName = result.device.name ?: "Unknown Device"
-            val deviceAddress = result.device.address
-            val rssi = result.rssi
-            val timestampMillis = result.timestampNanos / 1_000_000 // Convert nanoseconds to milliseconds
-            val humanReadableTimestamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date(timestampMillis))
-
-            // Getting the ScanRecord and parsing some data from it
-            val scanRecord = result.scanRecord
-            val serviceUuids = scanRecord?.serviceUuids?.joinToString { it.uuid.toString() } ?: "No Service UUIDs"
-            val manufacturerData = scanRecord?.manufacturerSpecificData?.toString() ?: "No Manufacturer Data"
-
-            // Constructing a detailed packet info string
-            val packetInfo = """
-            $deviceName ($deviceAddress)
-            RSSI: $rssi
-            Timestamp: $humanReadableTimestamp
-            Service UUIDs: $serviceUuids
-            Manufacturer Data: $manufacturerData
-            """.trimIndent()
-
-            Log.d("BLE Packet", packetInfo)
-            runOnUiThread {
-                packetDataTextView.append("$packetInfo\n\n")
-
-                // Auto-scroll to the bottom only if autoScrollToBottom is true
-                if (autoScrollToBottom) {
-                    scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
-                }
-            }
+            startScanning()
         }
     }
 
     private fun startScanning() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.BLUETOOTH_SCAN
-            ), PERMISSION_REQUEST_CODE_BLUETOOTH_SCAN)
-        } else {
-            bluetoothLeScanner?.startScan(scanCallback)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            return
         }
+        bluetoothLeScanner?.startScan(scanCallback)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE_BLUETOOTH_CONNECT) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                startScanning()
-            } else {
-                Toast.makeText(this, "Permissions are required to scan BLE devices.", Toast.LENGTH_SHORT).show()
-            }
+        if (requestCode == PERMISSION_REQUEST_CODE_BLUETOOTH_SCAN && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+            startScanning()
+        } else {
+            Toast.makeText(this, "Permissions are required to scan BLE devices.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -165,7 +134,7 @@ class PacketViewerActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.BLUETOOTH_SCAN), 1)
+                arrayOf(Manifest.permission.BLUETOOTH_SCAN), 1)
         } else {
             bluetoothLeScanner?.stopScan(scanCallback)
         }
