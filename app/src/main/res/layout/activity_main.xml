@@ -21,7 +21,7 @@
     <Button
         android:id="@+id/menuButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:text="@string/menu_button_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -33,7 +33,7 @@
     <Button
         android:id="@+id/wifiButton"
         android:layout_width="121dp"
-        android:layout_height="45dp"
+        android:layout_height="50dp"
         android:text="@string/wifi_button_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
