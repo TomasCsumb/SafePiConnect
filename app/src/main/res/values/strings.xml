@@ -9,4 +9,7 @@
     <string name="provision_button_text">Provision Device</string>
     <string name="provision_loading_text">Provisioning In Progress</string>
     <string name="disconnect">Disconnect</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="wifi_button_text">Sign In</string>
+
 </resources>

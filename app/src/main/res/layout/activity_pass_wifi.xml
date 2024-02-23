@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PassWiFiActivity">
+
+
+    <EditText
+        android:id="@+id/passwordInput"
+        android:layout_width="200dp"
+        android:layout_height="54dp"
+        android:layout_marginBottom="304dp"
+        android:ems="10"
+        android:gravity="center"
+        android:hint="@string/enter_password"
+        android:inputType="textPassword"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/wifi_Title"
+        android:layout_width="293dp"
+        android:layout_height="97dp"
+        android:gravity="center"
+        android:text="Pass WIFI Credentials to Device"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.07" />
+
+    <Button
+        android:id="@+id/confirm_button"
+        android:layout_width="123dp"
+        android:layout_height="66dp"
+        android:text="Confirm"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passwordInput" />
+
+    <Spinner
+        android:id="@+id/SSID"
+        android:layout_width="281dp"
+        android:layout_height="53dp"
+        app:layout_constraintBottom_toTopOf="@+id/passwordInput"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_Title" />
+</androidx.constraintlayout.widget.ConstraintLayout>
