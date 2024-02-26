@@ -15,4 +15,11 @@ TODO:
 - Implement controls menu. 
 - Expand the scanner with more device information, and the ability to connect.
 
-
+### Test User
+POST  https://localhost/create_user HTTP/1.1
+content-type: application/json
+{
+    "email":"test@test.com",
+    "password":"TheWorstPasswor1209",
+    "isLocked":"true"
+}
