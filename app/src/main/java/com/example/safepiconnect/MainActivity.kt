@@ -41,9 +41,9 @@ class MainActivity : AppCompatActivity() {
 
                 val tof = api.isLocked(result)
                 if (tof) {
-                    Log.d(TAG, "Door id Locked")
+                    Log.d(TAG, "Door is Locked")
                 } else {
-                    Log.d(TAG, "Door id Unlocked")
+                    Log.d(TAG, "Door is Unlocked")
                 }
             }
 
@@ -54,13 +54,11 @@ class MainActivity : AppCompatActivity() {
 
         // example of setting the status to unlocked
         val emailRequestBody = """
-            {
-                "fields": {
-                    "email": { "stringValue": "test@test.com" },
-                    "password": { "stringValue": "eb233b36632dc77950be4fc9e96d62f1c097d5dbd529ae68a2b314710791ca8e" },
-                    "isLocked": { "booleanValue": false }
-                }
-            }
+        {
+            "email": "test@test.com",
+            "password": "eb233b36632dc77950be4fc9e96d62f1c097d5dbd529ae68a2b314710791ca8e",
+            "isLocked": "true"
+        }
         """
         api.post("api/postDoor", emailRequestBody, object : API.ResponseCallback {
             override fun onResponse(result: String) {
