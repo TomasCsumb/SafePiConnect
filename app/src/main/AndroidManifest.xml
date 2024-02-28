@@ -46,9 +46,6 @@
             android:name=".PassWiFiActivity"
             android:exported="false" />
         <activity
-            android:name=".QRScannerActivity"
-            android:exported="false"/>
-        <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"
             tools:replace="android:screenOrientation"
