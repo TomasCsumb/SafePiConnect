@@ -1,7 +1,9 @@
 package com.example.safepiconnect
 
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.safepiconnect.databinding.ActivityMainMenuBinding
 
@@ -15,7 +17,7 @@ class MainMenuActivity : AppCompatActivity() {
 
         // Provisioning button
         binding.provisionButton.setOnClickListener{
-            val intent = Intent(this, ProvisionLoading::class.java)
+            val intent = Intent(this, QRScannerActivity::class.java)
             startActivity(intent)
         }
 
