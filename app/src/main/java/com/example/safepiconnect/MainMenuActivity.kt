@@ -17,7 +17,7 @@ class MainMenuActivity : AppCompatActivity() {
 
         // Provisioning button
         binding.provisionButton.setOnClickListener{
-            val intent = Intent(this, QRScannerActivity::class.java)
+            val intent = Intent(this, ProvisionLoading::class.java)
             startActivity(intent)
         }
 
@@ -33,6 +33,7 @@ class MainMenuActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // sniffer
         binding.snifferButton.setOnClickListener{
             val intent = Intent(this, PacketViewerActivity::class.java)
             startActivity(intent)

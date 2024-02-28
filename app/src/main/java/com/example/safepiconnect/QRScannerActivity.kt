@@ -12,9 +12,6 @@ import com.journeyapps.barcodescanner.CaptureActivity
 class QRScannerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Set the orientation to portrait before anything else
-//        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
         super.onCreate(savedInstanceState)
         initiateScan()
     }
