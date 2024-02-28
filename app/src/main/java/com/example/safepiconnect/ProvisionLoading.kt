@@ -18,32 +18,15 @@ import kotlinx.coroutines.withContext
 class ProvisionLoading : AppCompatActivity() {
     private lateinit var binding: ActivityProvisionLoadingBinding
     private val scannerUtils = ScannerUtils()
-    private var scanResult: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProvisionLoadingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // first we grab the QR from the device so that we can communicate.
-
-        initiateScan()
-
-        // Start a new thread to poll for the scan result
-        Thread {
-            // Poll scanResult until it's no longer null, indicating a scan has occurred
-            while (scanResult == null) {
-                Thread.sleep(500) // Poll every 500 milliseconds
-            }
-            // Once scanResult is updated, proceed on the UI thread
-            runOnUiThread {
-                // Now that we have the scan result, proceed with device provisioning
-                provisionDevice {
-                    // After provisioning, navigate to the main menu
-                    navigateToMainMenu()
-                }
-            }
-        }.start()
+        provisionDevice {
+            navigateToMainMenu()
+        }
     }
 
     private fun provisionDevice(callback: () -> Unit) {
@@ -51,7 +34,7 @@ class ProvisionLoading : AppCompatActivity() {
             // Heavy operations are offloaded to the IO dispatcher
             val foundDevice = scannerUtils.searchDevices(
                 this@ProvisionLoading, lifecycleScope,
-                "safepi", "D8:3A:DD:B6"
+                "SafePi", "D8:3A:DD:B6"
             )
 
             foundDevice?.let { device ->
@@ -63,7 +46,7 @@ class ProvisionLoading : AppCompatActivity() {
                         BleDeviceManager.READ_CHARACTERISTIC_UUID
                     )
                     // this is the message that sends across.
-                    val message = "Writing from provisionDevice"
+                    val message = "Writing from provision Device!"
                     bleDeviceManager.writeChar(
                         message,
                         BleDeviceManager.SERVICE_ID,
@@ -98,26 +81,4 @@ class ProvisionLoading : AppCompatActivity() {
         finish()
     }
 
-    private fun initiateScan() {
-        IntentIntegrator(this).apply {
-            captureActivity = CaptureActivity::class.java // Use the default CaptureActivity
-            setOrientationLocked(false)
-            initiateScan()
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-        if (result != null) {
-            if (result.contents == null) {
-                Log.d("QRScannerActivity", "Cancelled scan")
-                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
-            } else {
-                Log.d("QRScannerActivity", "Scanned: " + result.contents)
-                Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
-                scanResult = result.contents
-            }
-        }
-    }
 }
