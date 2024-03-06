@@ -11,5 +11,6 @@
     <string name="disconnect">Disconnect</string>
     <string name="enter_password">Enter Password</string>
     <string name="wifi_button_text">Sign In</string>
+    <string name="main_menu">Main_Menu</string>
 
 </resources>

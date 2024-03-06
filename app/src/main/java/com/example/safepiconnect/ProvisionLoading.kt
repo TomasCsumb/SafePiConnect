@@ -8,9 +8,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityProvisionLoadingBinding
-import com.google.zxing.integration.android.IntentIntegrator
-import com.journeyapps.barcodescanner.CaptureActivity
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
