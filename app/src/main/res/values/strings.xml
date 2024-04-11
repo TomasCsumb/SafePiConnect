@@ -12,5 +12,10 @@
     <string name="enter_password">Enter Password</string>
     <string name="wifi_button_text">Sign In</string>
     <string name="main_menu">Main_Menu</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="safepiconnect">SafePiConnect</string>
+    <string name="login">Login</string>
+    <string name="create_new_account">Create New Account</string>
 
 </resources>
