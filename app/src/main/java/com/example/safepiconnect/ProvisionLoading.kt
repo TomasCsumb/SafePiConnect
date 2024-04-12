@@ -58,7 +58,7 @@ class ProvisionLoading : AppCompatActivity() {
                     }
                     bleDeviceManager.disconnect()
                     scannerUtils.stopBleScan()
-                    Toast.makeText(this@ProvisionLoading, "Success", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ProvisionLoading, "Successfully Prvisioned Device", Toast.LENGTH_SHORT).show()
                 }
             }  ?: run {
                 withContext(Dispatchers.Main) {

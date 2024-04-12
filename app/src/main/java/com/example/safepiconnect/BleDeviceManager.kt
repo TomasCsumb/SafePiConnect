@@ -151,6 +151,7 @@ object AESUtils {
         for (i in 0 until len step 2) {
             data[i / 2] = ((Character.digit(hexString[i], 16) shl 4) + Character.digit(hexString[i + 1], 16)).toByte()
         }
+        Log.d("SECRET KEY", data.toString());
         return data
     }
 

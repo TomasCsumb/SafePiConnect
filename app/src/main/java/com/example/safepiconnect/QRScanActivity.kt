@@ -40,7 +40,7 @@ class QRScanActivity : AppCompatActivity() {
                 Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
             } else {
                 Log.d("QRScannerActivity", "Scanned: " + result.contents)
-                Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
+//                Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
 
                 // go to the provision loading screen
                 val intent = Intent(this, ProvisionLoading::class.java)

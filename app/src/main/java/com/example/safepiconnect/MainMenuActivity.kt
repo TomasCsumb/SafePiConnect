@@ -17,7 +17,7 @@ class MainMenuActivity : AppCompatActivity() {
 
         // Provisioning button
         binding.provisionButton.setOnClickListener{
-            val intent = Intent(this, ProvisionLoading::class.java)
+            val intent = Intent(this, QRScanActivity::class.java)
             startActivity(intent)
         }
 
