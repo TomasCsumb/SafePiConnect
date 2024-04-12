@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.safepiconnect.databinding.ActivityQrScanBinding
 import com.google.zxing.integration.android.IntentIntegrator
 import com.journeyapps.barcodescanner.CaptureActivity
+import kotlinx.coroutines.delay
 
 class QRScanActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQrScanBinding

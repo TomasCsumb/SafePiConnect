@@ -100,7 +100,7 @@ class BleDeviceManager(
         }
     }
 
-    fun writeChar(message: String, serviceID: UUID, writeCharUUID: UUID) {
+    fun writeChar(message: String, serviceID: UUID, writeCharUUID: UUID, onComplete: (Boolean) -> Unit) {
         if (!::services.isInitialized) {
             Log.e(TAG, "Services not initialized yet")
             return
@@ -109,6 +109,7 @@ class BleDeviceManager(
         lifecycleScope.launch {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
                 activeOperations.incrementAndGet()
+                var success = false
                 try {
                     val service = services.findService(serviceID) ?: throw IllegalStateException("Service not found")
                     val writeChar = service.findCharacteristic(writeCharUUID) ?: throw IllegalStateException("Write characteristic not found")
@@ -117,10 +118,12 @@ class BleDeviceManager(
                     val dataByteArray = DataByteArray(encryptedText)
                     writeChar.write(dataByteArray, BleWriteType.DEFAULT)
                     Log.d(TAG, "Encrypted message written to characteristic")
+                    success = true
                 } catch (e: GeneralSecurityException) {
                     Log.e(TAG, "Error encrypting message: ${e.localizedMessage}")
                 } finally {
                     activeOperations.decrementAndGet()
+                    onComplete(success)
                 }
             }
         }

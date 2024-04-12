@@ -34,41 +34,41 @@ class MainActivity : AppCompatActivity() {
         requestLocationPermission()
 
         // Example of a GET request for the door status.
-        val api = API()
-        api.get("api/getDoor", null, object : API.ResponseCallback {
-            override fun onResponse(result: String) {
-                Log.d(  TAG,"Response received: $result")
-
-                val tof = api.isLocked(result)
-                if (tof) {
-                    Log.d(TAG, "Door is Locked")
-                } else {
-                    Log.d(TAG, "Door is Unlocked")
-                }
-            }
-
-            override fun onFailure(exception: Exception) {
-                Log.d(TAG, "Request failed: ${exception.message}")
-            }
-        })
-
-        // example of setting the status to unlocked
-        val emailRequestBody = """
-        {
-            "email": "test@test.com",
-            "password": "eb233b36632dc77950be4fc9e96d62f1c097d5dbd529ae68a2b314710791ca8e",
-            "isLocked": "true"
-        }
-        """
-        api.post("api/postDoor", emailRequestBody, object : API.ResponseCallback {
-            override fun onResponse(result: String) {
-                Log.d(TAG,"Response received: $result")
-            }
-
-            override fun onFailure(exception: Exception) {
-                Log.d(TAG,"Request failed: ${exception.message}")
-            }
-        })
+//        val api = API()
+//        api.get("api/getDoor", null, object : API.ResponseCallback {
+//            override fun onResponse(result: String) {
+//                Log.d(  TAG,"Response received: $result")
+//
+//                val tof = api.isLocked(result)
+//                if (tof) {
+//                    Log.d(TAG, "Door is Locked")
+//                } else {
+//                    Log.d(TAG, "Door is Unlocked")
+//                }
+//            }
+//
+//            override fun onFailure(exception: Exception) {
+//                Log.d(TAG, "Request failed: ${exception.message}")
+//            }
+//        })
+//
+//        // example of setting the status to unlocked
+//        val emailRequestBody = """
+//        {
+//            "email": "test@test.com",
+//            "password": "eb233b36632dc77950be4fc9e96d62f1c097d5dbd529ae68a2b314710791ca8e",
+//            "isLocked": "true"
+//        }
+//        """
+//        api.post("api/postDoor", emailRequestBody, object : API.ResponseCallback {
+//            override fun onResponse(result: String) {
+//                Log.d(TAG,"Response received: $result")
+//            }
+//
+//            override fun onFailure(exception: Exception) {
+//                Log.d(TAG,"Request failed: ${exception.message}")
+//            }
+//        })
 
 
         binding.wifiButton.setOnClickListener {
