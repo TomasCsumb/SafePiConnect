@@ -91,7 +91,7 @@ class BleDeviceManager(
                 val cipherValue = readChar.read()?.value
 
                 cipherValue?.let {
-                    val decryptedMessage = AESUtils.decrypt(it)
+                    val decryptedMessage = AESUtils.decrypt(context.applicationContext, it)
                     Log.d(TAG, "Decrypted Message: ${decryptedMessage.toString(Charsets.UTF_8)}")
                 } ?: Log.e(TAG, "Cipher value is null")
             } finally {
@@ -114,8 +114,12 @@ class BleDeviceManager(
                     val service = services.findService(serviceID) ?: throw IllegalStateException("Service not found")
                     val writeChar = service.findCharacteristic(writeCharUUID) ?: throw IllegalStateException("Write characteristic not found")
                     val plainText = message.toByteArray(Charsets.UTF_8)
-                    val encryptedText = AESUtils.encrypt(plainText)
+
+                    // run encryption
+                    val encryptedText = AESUtils.encrypt(context.applicationContext, plainText)
                     val dataByteArray = DataByteArray(encryptedText)
+
+                    // write to the char
                     writeChar.write(dataByteArray, BleWriteType.DEFAULT)
                     Log.d(TAG, "Encrypted message written to characteristic")
                     success = true
@@ -138,12 +142,13 @@ class BleDeviceManager(
 }
 
 object AESUtils {
-    // do not make const because we have to convert these.
-    private val hexKey = "0123456789ABCDEFFEDCBA98765432100123456789ABCDEFFEDCBA9876543210"
-    private val hexIV = "0123456789ABCDEFFEDCBA9876543210"
-
-    private val AES_KEY = hexStringToByteArray(hexKey)
-    private val IV = hexStringToByteArray(hexIV)
+    private fun getEncryptionKey(context: Context): ByteArray {
+        val sharedPreferences = context.getSharedPreferences("EncPrefs", Context.MODE_PRIVATE)
+        // key string should be: 0123456789ABCDEFFEDCBA98765432100123456789ABCDEFFEDCBA9876543210
+        val keyString = sharedPreferences.getString("encryptionKey", null)
+            ?: throw IllegalStateException("Encryption key not found")
+        return hexStringToByteArray(keyString)
+    }
 
     private fun hexStringToByteArray(hexString: String): ByteArray {
         val len = hexString.length
@@ -151,25 +156,25 @@ object AESUtils {
         for (i in 0 until len step 2) {
             data[i / 2] = ((Character.digit(hexString[i], 16) shl 4) + Character.digit(hexString[i + 1], 16)).toByte()
         }
-        Log.d("SECRET KEY", data.toString());
         return data
     }
 
     @Throws(GeneralSecurityException::class)
-    fun encrypt(plaintext: ByteArray): ByteArray {
+    fun encrypt(context: Context, plaintext: ByteArray): ByteArray {
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        val keySpec = SecretKeySpec(AES_KEY, "AES")
-        val ivSpec = IvParameterSpec(IV)
+        val keySpec = SecretKeySpec(getEncryptionKey(context), "AES")
+        val ivSpec = IvParameterSpec(hexStringToByteArray("0123456789ABCDEFFEDCBA9876543210")) // Consider storing IV securely too
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
         return cipher.doFinal(plaintext)
     }
 
     @Throws(GeneralSecurityException::class)
-    fun decrypt(ciphertext: ByteArray): ByteArray {
+    fun decrypt(context: Context, ciphertext: ByteArray): ByteArray {
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        val keySpec = SecretKeySpec(AES_KEY, "AES")
-        val ivSpec = IvParameterSpec(IV)
+        val keySpec = SecretKeySpec(getEncryptionKey(context), "AES")
+        val ivSpec = IvParameterSpec(hexStringToByteArray("0123456789ABCDEFFEDCBA9876543210"))
         cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
         return cipher.doFinal(ciphertext)
     }
 }
+

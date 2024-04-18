@@ -24,7 +24,7 @@ class ProvisionLoading : AppCompatActivity() {
         binding = ActivityProvisionLoadingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
+        // TODO: Query the provisioning api pathway and recieve two tokens, one JWT, and one refresh JWT.
         startScanSearch() {
             navigateToMainMenu()
         }
@@ -41,8 +41,11 @@ class ProvisionLoading : AppCompatActivity() {
                 // connect and deal with reading/writing
                 BleDeviceManager(this@ProvisionLoading, targetDevice.address) { bleDeviceManager ->
 
-                    // this is the message that sends across.
-                    val message = "Writing from provision Device!!!!!!!@!@"
+
+                    // TODO: Execute two writes here. the first will be the Wifi command if the read char does not show
+                    //  status "connected", and wait for the status to be connected. Then send the token command and
+                    //  the two tokens as payload.
+                    val message = "Writing from provision Device!!!!!!!00"
                     bleDeviceManager.writeChar(
                         message,
                         BleDeviceManager.SERVICE_ID,
