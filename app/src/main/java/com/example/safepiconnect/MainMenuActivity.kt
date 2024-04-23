@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import com.example.safepiconnect.MainActivity.Companion.ACCESS_TOKEN
 import com.example.safepiconnect.databinding.ActivityMainMenuBinding
 
 class MainMenuActivity : AppCompatActivity() {

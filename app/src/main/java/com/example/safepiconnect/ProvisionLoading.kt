@@ -7,24 +7,47 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityProvisionLoadingBinding
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
+import java.io.IOException
 
 class ProvisionLoading : AppCompatActivity() {
     private lateinit var binding: ActivityProvisionLoadingBinding
     private val scannerUtils = ScannerUtils()
     private val bleDeviceManager: BleDeviceManager? = null
+    val api = API()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProvisionLoadingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // TODO: Query the provisioning api pathway and recieve two tokens, one JWT, and one refresh JWT.
+        // setup observer for the user token so that we can provision once the user has logged in.
+        MainActivity.USER_TOKEN.observe(this, Observer { token ->
+            if (token != null) {
+                performProvisionRequest(token)
+            }
+        })
+
+        // Launch the first request
+        performLoginRequest()
+
+        MainActivity.ACCESS_TOKEN.observe(this, Observer { accessToken ->
+            if (accessToken != null) {
+                // Log the access token using Android's Log class
+                Log.d("AnotherActivity", "Observed Access Token: $accessToken")
+            } else {
+                // Optionally handle or log null cases
+                Log.d("AnotherActivity", "Access Token is null")
+            }
+        })
         startScanSearch() {
             navigateToMainMenu()
         }
@@ -81,5 +104,35 @@ class ProvisionLoading : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
+    }
+    private fun performLoginRequest() {
+        // Launching coroutine on IO thread for network request
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val token = api.sendLoginRequest("devtest@test.com", "0urPa\$\$p0rt1")
+                withContext(Dispatchers.Main) {
+                    // Post value to LiveData on the main thread
+                    MainActivity.USER_TOKEN.postValue(token)
+                }
+                Log.d("Login", "Token received and posted: $token")
+            } catch (e: IOException) {
+                Log.e("Login", "Error during login request: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun performProvisionRequest(token: String) {
+        // Again launching coroutine on IO thread for network request
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val (accessToken, refreshToken) = api.sendProvisionRequest("devtest@test.com", token)
+                // post the tokens
+                MainActivity.ACCESS_TOKEN.postValue(accessToken)
+                MainActivity.REFRESH_TOKEN.postValue(refreshToken)
+                Log.d("Provision", "Access Token: $accessToken, Refresh Token: $refreshToken")
+            } catch (e: IOException) {
+                Log.e("Provision", "Error during provision request: ${e.message}", e)
+            }
+        }
     }
 }

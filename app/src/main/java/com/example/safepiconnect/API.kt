@@ -1,95 +1,66 @@
 package com.example.safepiconnect
 
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.MediaType
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
-import okhttp3.Response
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
 import java.security.MessageDigest
 
-
 class API {
-    private val password = "mynewpassword"
-    private val hashedPassword = Hasher.hash(password)
     private val client = OkHttpClient()
-    private val url = "https://safepi.org/"
+    private val baseUrl = "https://safepi.org"
 
-    interface ResponseCallback {
-        fun onResponse(result: String)
-        fun onFailure(exception: Exception)
-    }
+    suspend fun sendLoginRequest(email: String, password: String): String {
+        val formBody = FormBody.Builder()
+            .add("email", email)
+            .add("password", password)
+            .build()
 
-    fun get(path: String, queryParams: Map<String, String>? = null, callback: ResponseCallback) {
-        val httpUrlBuilder = (url + path).toHttpUrlOrNull()?.newBuilder()
+        val request = Request.Builder()
+            .url("$baseUrl/login")
+            .post(formBody)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .build()
 
-        // Add query parameters to the URL if any
-        queryParams?.forEach { (key, value) ->
-            httpUrlBuilder?.addQueryParameter(key, value)
+        return withContext(Dispatchers.IO) { // Switch to IO Dispatcher for network operation
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IOException("Unexpected code $response")
+                }
+                val responseBody = response.body?.string() ?: throw IOException("Response body is null")
+                val jsonObject = JSONObject(responseBody)
+                jsonObject.getString("access_token")
+            }
         }
-
-        val urlWithParams = httpUrlBuilder?.build().toString()
-
-        val request = Request.Builder()
-            .url(urlWithParams)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback.onFailure(e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!response.isSuccessful) {
-                        callback.onFailure(IOException("Unexpected code $response"))
-                        return
-                    }
-
-                    val result = response.body?.string() ?: "Error: Response body is null"
-                    callback.onResponse(result)
-                }
-            }
-        })
     }
 
-    fun post(path: String, requestBody: String, callback: ResponseCallback) {
-        val request = Request.Builder()
-            .url(url + path)
-            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody))
+    suspend fun sendProvisionRequest(email: String, token: String): Pair<String, String> {
+        val formBody = FormBody.Builder()
+            .add("email", email)
             .build()
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback.onFailure(e)
-            }
+        val request = Request.Builder()
+            .url("$baseUrl/provision_pi")
+            .post(formBody)
+            .header("Authorization", "Bearer $token")
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .build()
 
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!response.isSuccessful) {
-                        callback.onFailure(IOException("Unexpected code $response"))
-                        return
-                    }
-
-                    val result = response.body?.string() ?: "Error: Response body is null"
-                    callback.onResponse(result)
+        return withContext(Dispatchers.IO) { // Execute network call on I/O dispatcher
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IOException("Unexpected code $response")
                 }
+                val responseBody = response.body?.string() ?: throw IOException("Response body is null")
+                val jsonObject = JSONObject(responseBody)
+                Pair(
+                    jsonObject.getString("access_token"),
+                    jsonObject.getString("refresh_token")
+                )
             }
-        })
-    }
-
-    fun isLocked(json: String): Boolean {
-        val jsonObject = JSONObject(json)
-
-        // Navigate through the JSON object structure to find the isLocked boolean value
-        val fields = jsonObject.getJSONObject("fields")
-        val isLocked = fields.getJSONObject("isLocked")
-        return isLocked.getBoolean("booleanValue")
+        }
     }
 }
 
