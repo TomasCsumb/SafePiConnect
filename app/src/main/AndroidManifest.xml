@@ -30,7 +30,7 @@
         android:theme="@style/Theme.SafePiConnect"
         tools:targetApi="31">
         <activity
-            android:name=".`Login Activity`"
+            android:name=".LoginActivity"
             android:exported="false" />
         <activity
             android:name=".DeviceActivity"

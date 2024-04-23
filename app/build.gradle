@@ -3,6 +3,11 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+
+def apikeyPropertiesFile = rootProject.file("apikey.properties")
+def apikeyProperties = new Properties()
+apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
+
 android {
     namespace 'com.example.safepiconnect'
     compileSdk 34
@@ -15,10 +20,16 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+
+
+        buildConfigField("String", "CLIENT_ID", apikeyProperties['CLIENT_ID'])
+        buildConfigField("String", "CLIENT_SECRET", apikeyProperties['CLIENT_SECRET'])
     }
 
     buildFeatures {
         viewBinding = true
+        buildConfig true
     }
 
 

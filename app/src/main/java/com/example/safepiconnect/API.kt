@@ -1,9 +1,9 @@
 package com.example.safepiconnect
 
+import android.util.Base64
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -19,6 +19,8 @@ class API {
     private val hashedPassword = Hasher.hash(password)
     private val client = OkHttpClient()
     private val url = "https://safepi.org/"
+    private val clientId = BuildConfig.CLIENT_ID
+    private val clientSecret = BuildConfig.CLIENT_SECRET
 
     interface ResponseCallback {
         fun onResponse(result: String)
@@ -59,9 +61,11 @@ class API {
     }
 
     fun post(path: String, requestBody: String, callback: ResponseCallback) {
+        val secret = encodeClientSecret(clientId, clientSecret)
         val request = Request.Builder()
             .url(url + path)
-            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody))
+            .addHeader("Autherization","Basic " + secret)
+            .post(RequestBody.create("application/x-www-form-urlencoded".toMediaTypeOrNull(), requestBody))
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -81,6 +85,13 @@ class API {
                 }
             }
         })
+    }
+
+    // Function to convert the clientID and secret to base64
+    fun encodeClientSecret(id: String, secret: String): String {
+        var encodeString = "$id:$secret"
+        val data = encodeString.toByteArray(Charsets.UTF_8)
+        return Base64.encodeToString(data, Base64.DEFAULT)
     }
 
     fun isLocked(json: String): Boolean {

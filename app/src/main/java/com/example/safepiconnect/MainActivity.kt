@@ -1,6 +1,7 @@
 package com.example.safepiconnect
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -31,6 +32,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         requestLocationPermission()
+
+        getToken()
 
         // Example of a GET request for the door status.
         val api = API()
@@ -120,6 +123,20 @@ class MainActivity : AppCompatActivity() {
         if (requiredPermissions.isNotEmpty()) {
             ActivityCompat.requestPermissions(this, requiredPermissions.toTypedArray(), REQUEST_CODE_BLUETOOTH_PERMISSIONS)
         }
+    }
+
+    fun getToken() {
+        val path:String = "/token"
+        val body = "grant_type=client_credentials\nscope=read"
+        var api = API()
+        api.post(path, body, object:API.ResponseCallback{
+            override fun onResponse(result: String) {
+                Log.d(ContentValues.TAG, "Response received: $result")
+            }
+            override fun onFailure(exception: Exception) {
+                Log.d(ContentValues.TAG,"Request failed: ${exception.message}")
+            }
+        })
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
