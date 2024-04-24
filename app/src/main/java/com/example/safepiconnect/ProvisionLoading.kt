@@ -48,9 +48,7 @@ class ProvisionLoading : AppCompatActivity() {
                 Log.d("AnotherActivity", "Access Token is null")
             }
         })
-        startScanSearch() {
-            navigateToMainMenu()
-        }
+        startScanSearch() {}
     }
 
     private fun startScanSearch(callback: () -> Unit) {
@@ -63,11 +61,12 @@ class ProvisionLoading : AppCompatActivity() {
 
                 // connect and deal with reading/writing
                 BleDeviceManager(this@ProvisionLoading, targetDevice.address) { bleDeviceManager ->
+                    // read operation
+                    bleDeviceManager.readChar(
+                        BleDeviceManager.SERVICE_ID,
+                        BleDeviceManager.READ_CHARACTERISTIC_UUID
+                    )
 
-
-                    // TODO: Execute two writes here. the first will be the Wifi command if the read char does not show
-                    //  status "connected", and wait for the status to be connected. Then send the token command and
-                    //  the two tokens as payload.
                     val message = "Writing from provision Device!!!!!!!00"
                     bleDeviceManager.writeChar(
                         message,
@@ -85,12 +84,14 @@ class ProvisionLoading : AppCompatActivity() {
                     bleDeviceManager.disconnect()
                     scannerUtils.stopBleScan()
                     Toast.makeText(this@ProvisionLoading, "Successfully Prvisioned Device", Toast.LENGTH_SHORT).show()
+                    navigateToMainMenu()
                 }
             }  ?: run {
                 withContext(Dispatchers.Main) {
                     val message = "WARNING: Device not found"
                     Log.d(ContentValues.TAG, message)
                     Toast.makeText(this@ProvisionLoading, message, Toast.LENGTH_SHORT).show()
+                    navigateToMainMenu()
                 }
             }
             withContext(Dispatchers.Main) {

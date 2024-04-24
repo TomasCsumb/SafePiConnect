@@ -14,7 +14,6 @@ import kotlinx.coroutines.delay
 class QRScanActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQrScanBinding
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityQrScanBinding.inflate(layoutInflater)

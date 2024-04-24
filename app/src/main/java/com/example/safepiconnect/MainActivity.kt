@@ -1,30 +1,23 @@
 package com.example.safepiconnect
 
 import android.Manifest
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.example.safepiconnect.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.IOException
-import org.json.JSONObject
-import java.lang.Thread.sleep
+
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
+    private val scannerUtils = ScannerUtils()
+    private val bleDeviceManager: BleDeviceManager? = null
+    val api = API()
 
     companion object {
         private const val REQUEST_CODE_LOCATION_PERMISSION = 101
