@@ -22,9 +22,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_CODE_LOCATION_PERMISSION = 101
         private const val REQUEST_CODE_BLUETOOTH_PERMISSIONS = 102
-        val USER_TOKEN = MutableLiveData<String>()
-        val ACCESS_TOKEN = MutableLiveData<String>()
-        val REFRESH_TOKEN = MutableLiveData<String>()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

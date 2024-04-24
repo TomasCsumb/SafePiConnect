@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityProvisionLoadingBinding
@@ -23,35 +24,40 @@ class ProvisionLoading : AppCompatActivity() {
     private val bleDeviceManager: BleDeviceManager? = null
     val api = API()
 
+    companion object {
+        val USER_TOKEN = MutableLiveData<String>()
+        val ACCESS_TOKEN = MutableLiveData<String>()
+        val REFRESH_TOKEN = MutableLiveData<String>()
+        val ID = MutableLiveData<String>()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProvisionLoadingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // setup observer for the user token so that we can provision once the user has logged in.
-        MainActivity.USER_TOKEN.observe(this, Observer { token ->
-            if (token != null) {
-                performProvisionRequest(token)
-            }
-        })
+        // Setting up LiveData observers
+        setupObservers()
 
         // Launch the first request
         performLoginRequest()
-
-        MainActivity.ACCESS_TOKEN.observe(this, Observer { accessToken ->
-            if (accessToken != null) {
-                // Log the access token using Android's Log class
-                Log.d("AnotherActivity", "Observed Access Token: $accessToken")
-            } else {
-                // Optionally handle or log null cases
-                Log.d("AnotherActivity", "Access Token is null")
-            }
-        })
-        startScanSearch() {}
     }
 
-    private fun startScanSearch(callback: () -> Unit) {
+    private fun setupObservers() {
+        // Observing user token
+        USER_TOKEN.observe(this, Observer { token ->
+            if (token != null) performProvisionRequest(token)
+        })
+
+        // Observing access and refresh tokens
+        ACCESS_TOKEN.observe(this, Observer { accessToken ->
+            REFRESH_TOKEN.observe(this, Observer { refreshToken ->
+                if (accessToken != null && refreshToken != null) startScanSearch()
+            })
+        })
+    }
+
+    private fun startScanSearch() {
         scannerUtils.startBleScan(this, lifecycleScope)
 
         lifecycleScope.launch {
@@ -67,7 +73,11 @@ class ProvisionLoading : AppCompatActivity() {
                         BleDeviceManager.READ_CHARACTERISTIC_UUID
                     )
 
-                    val message = "Writing from provision Device!!!!!!!00"
+                    // build the command
+                    val data = "token ${ID.value} ${ACCESS_TOKEN.value} ${REFRESH_TOKEN.value}"
+                    Log.d(TAG, "COMMAND: $data")
+
+                    val message = "Writing from provision Device!!!!!!!"
                     bleDeviceManager.writeChar(
                         message,
                         BleDeviceManager.SERVICE_ID,
@@ -80,6 +90,7 @@ class ProvisionLoading : AppCompatActivity() {
                             // Handle failed write operation
                             Log.e(TAG, "Write operation failed")
                         }
+
                     }
                     bleDeviceManager.disconnect()
                     scannerUtils.stopBleScan()
@@ -94,9 +105,6 @@ class ProvisionLoading : AppCompatActivity() {
                     navigateToMainMenu()
                 }
             }
-            withContext(Dispatchers.Main) {
-                callback()
-            }
         }
     }
 
@@ -106,6 +114,7 @@ class ProvisionLoading : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
+
     private fun performLoginRequest() {
         // Launching coroutine on IO thread for network request
         CoroutineScope(Dispatchers.IO).launch {
@@ -113,7 +122,7 @@ class ProvisionLoading : AppCompatActivity() {
                 val token = api.sendLoginRequest("devtest@test.com", "0urPa\$\$p0rt1")
                 withContext(Dispatchers.Main) {
                     // Post value to LiveData on the main thread
-                    MainActivity.USER_TOKEN.postValue(token)
+                    USER_TOKEN.postValue(token)
                 }
                 Log.d("Login", "Token received and posted: $token")
             } catch (e: IOException) {
@@ -128,8 +137,8 @@ class ProvisionLoading : AppCompatActivity() {
             try {
                 val (accessToken, refreshToken) = api.sendProvisionRequest("devtest@test.com", token)
                 // post the tokens
-                MainActivity.ACCESS_TOKEN.postValue(accessToken)
-                MainActivity.REFRESH_TOKEN.postValue(refreshToken)
+                ACCESS_TOKEN.postValue(accessToken)
+                REFRESH_TOKEN.postValue(refreshToken)
                 Log.d("Provision", "Access Token: $accessToken, Refresh Token: $refreshToken")
             } catch (e: IOException) {
                 Log.e("Provision", "Error during provision request: ${e.message}", e)
