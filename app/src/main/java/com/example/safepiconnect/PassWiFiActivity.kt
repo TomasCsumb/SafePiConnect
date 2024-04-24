@@ -1,10 +1,13 @@
 package com.example.safepiconnect
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.safepiconnect.databinding.ActivityPassWifiBinding
@@ -27,21 +30,32 @@ class PassWiFiActivity : AppCompatActivity() {
         }
     }
 
-    private fun getSSID(){
-        val wifiManager = getSystemService(this.WIFI_SERVICE) as? WifiManager
-        val networks = if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-        ) {
+    // Assuming PERMISSIONS_REQUEST_CODE is defined elsewhere as a constant
+    private fun getSSID() {
+        val wifiManager = getSystemService(Context.WIFI_SERVICE) as? WifiManager
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), PERMISSIONS_REQUEST_CODE)
-            return
+        } else {
+            val networks = wifiManager?.scanResults
+            updateSSIDList(networks)
         }
-        else{
-            wifiManager?.scanResults
+    }
 
-        }
+    private fun updateSSIDList(networks: List<ScanResult>?) {
         val ssids = networks?.filterNot { it.SSID.isEmpty() }?.map { it.SSID }?.distinct()
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, ssids ?: listOf())
         binding.SSID.adapter = adapter
     }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSIONS_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            getSSID() // Try getting SSIDs again after permission is granted
+        } else {
+            Toast.makeText(this, "Permission denied to access location.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     companion object {
         private const val PERMISSIONS_REQUEST_CODE = 100
     }
