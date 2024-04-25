@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
+import com.example.safepiconnect.ProvisionLoading.Companion.DEVICE_NETWORK_CONNECTION
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -93,6 +94,7 @@ class BleDeviceManager(
                 cipherValue?.let {
                     val decryptedMessage = AESUtils.decrypt(context.applicationContext, it)
                     Log.d(TAG, "Decrypted Message: ${decryptedMessage.toString(Charsets.UTF_8)}")
+                    DEVICE_NETWORK_CONNECTION.postValue(decryptedMessage.toString(Charsets.UTF_8))
                 } ?: Log.e(TAG, "Cipher value is null")
             } finally {
                 activeOperations.decrementAndGet()

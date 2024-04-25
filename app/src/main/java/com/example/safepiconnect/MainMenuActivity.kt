@@ -5,8 +5,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.safepiconnect.databinding.ActivityMainMenuBinding
 
+
 class MainMenuActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainMenuBinding
+    private val scannerUtils = ScannerUtils()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -15,19 +17,13 @@ class MainMenuActivity : AppCompatActivity() {
 
         // Provisioning button
         binding.provisionButton.setOnClickListener{
-            val intent = Intent(this, QRScanActivity::class.java)
+            val intent = Intent(this, CheckDeviceWifiActivity::class.java)
             startActivity(intent)
         }
 
         // start the scanner
         binding.scanButton.setOnClickListener{
             val intent = Intent(this, ScannerActivity::class.java)
-            startActivity(intent)
-        }
-
-        // open controls window
-        binding.controlsButton.setOnClickListener{
-            val intent = Intent(this, AdminControlsActivity::class.java)
             startActivity(intent)
         }
 

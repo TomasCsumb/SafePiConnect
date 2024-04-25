@@ -45,6 +45,9 @@
             android:name=".ProvisionLoading"
             android:exported="false" />
         <activity
+            android:name=".CheckDeviceWifiActivity"
+            android:exported="false" />
+        <activity
             android:name=".AdminControlsActivity"
             android:exported="false" />
         <activity

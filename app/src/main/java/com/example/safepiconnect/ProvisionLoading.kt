@@ -29,6 +29,7 @@ class ProvisionLoading : AppCompatActivity() {
         val ACCESS_TOKEN = MutableLiveData<String>()
         val REFRESH_TOKEN = MutableLiveData<String>()
         val ID = MutableLiveData<String>()
+        val DEVICE_NETWORK_CONNECTION = MutableLiveData<String>()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
