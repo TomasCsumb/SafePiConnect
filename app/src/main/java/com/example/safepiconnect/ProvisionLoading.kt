@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import com.example.safepiconnect.LoginActivity.Companion.PASSWORD
+import com.example.safepiconnect.LoginActivity.Companion.USERNAME
 import com.example.safepiconnect.databinding.ActivityProvisionLoadingBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +30,6 @@ class ProvisionLoading : AppCompatActivity() {
         val USER_TOKEN = MutableLiveData<String>()
         val ACCESS_TOKEN = MutableLiveData<String>()
         val REFRESH_TOKEN = MutableLiveData<String>()
-        val ID = MutableLiveData<String>()
         val DEVICE_NETWORK_CONNECTION = MutableLiveData<String>()
     }
 
@@ -41,13 +42,19 @@ class ProvisionLoading : AppCompatActivity() {
         setupObservers()
 
         // Launch the first request
-        performLoginRequest()
+        USERNAME.observe(this, Observer { username ->
+            PASSWORD.observe(this, Observer { password ->
+                performLoginRequest(username, password)
+            })
+        })
     }
 
     private fun setupObservers() {
         // Observing user token
         USER_TOKEN.observe(this, Observer { token ->
-            if (token != null) performProvisionRequest(token)
+            USERNAME.observe(this, Observer { username ->
+                if (token != null) performProvisionRequest(username, token)
+            })
         })
 
         // Observing access and refresh tokens
@@ -68,19 +75,14 @@ class ProvisionLoading : AppCompatActivity() {
 
                 // connect and deal with reading/writing
                 BleDeviceManager(this@ProvisionLoading, targetDevice.address) { bleDeviceManager ->
-                    // read operation
-                    bleDeviceManager.readChar(
-                        BleDeviceManager.SERVICE_ID,
-                        BleDeviceManager.READ_CHARACTERISTIC_UUID
-                    )
 
                     // build the command
-                    val data = "token ${ID.value} ${ACCESS_TOKEN.value} ${REFRESH_TOKEN.value}"
+                    val data = "provision ${ACCESS_TOKEN.value} ${REFRESH_TOKEN.value}"
                     Log.d(TAG, "COMMAND: $data")
 
                     val message = "Writing from provision Device!!!!!!!"
                     bleDeviceManager.writeChar(
-                        message,
+                        data,
                         BleDeviceManager.SERVICE_ID,
                         BleDeviceManager.WRITE_CHARACTERISTIC_UUID
                     ) { isSuccess ->
@@ -116,11 +118,11 @@ class ProvisionLoading : AppCompatActivity() {
         finish()
     }
 
-    private fun performLoginRequest() {
+    private fun performLoginRequest(username : String, password : String) {
         // Launching coroutine on IO thread for network request
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val token = api.sendLoginRequest("devtest@test.com", "0urPa\$\$p0rt1")
+                val token = api.sendLoginRequest(username, password)
                 withContext(Dispatchers.Main) {
                     // Post value to LiveData on the main thread
                     USER_TOKEN.postValue(token)
@@ -132,11 +134,11 @@ class ProvisionLoading : AppCompatActivity() {
         }
     }
 
-    private fun performProvisionRequest(token: String) {
+    private fun performProvisionRequest(username : String, token: String) {
         // Again launching coroutine on IO thread for network request
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val (accessToken, refreshToken) = api.sendProvisionRequest("devtest@test.com", token)
+                val (accessToken, refreshToken) = api.sendProvisionRequest(username, token)
                 // post the tokens
                 ACCESS_TOKEN.postValue(accessToken)
                 REFRESH_TOKEN.postValue(refreshToken)

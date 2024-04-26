@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.example.safepiconnect.databinding.ActivityLoginBinding
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,11 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     val api = API()  // Ensure API is setup to handle login requests
 
+    companion object {
+        val USERNAME = MutableLiveData<String>()
+        val PASSWORD = MutableLiveData<String>()
+
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
@@ -29,6 +35,8 @@ class LoginActivity : AppCompatActivity() {
         binding.buttonLogIn.setOnClickListener {
             val username = binding.editTextUsername.text.toString()
             val password = binding.editTextPassword.text.toString()
+            USERNAME.postValue(username)
+            PASSWORD.postValue(password)
             performLoginRequest(username, password, object : LoginCallback {
                 override fun onLoginSuccess() {
                     Toast.makeText(this@LoginActivity, "Successfully Logged in", Toast.LENGTH_SHORT).show()

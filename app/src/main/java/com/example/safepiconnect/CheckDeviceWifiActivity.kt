@@ -48,7 +48,7 @@ class CheckDeviceWifiActivity : AppCompatActivity(){
                 ProvisionLoading.DEVICE_NETWORK_CONNECTION.observe(this@CheckDeviceWifiActivity) { connectionStatus ->
                     if (connectionStatus == "connected:True") {
                         runOnUiThread {
-                            val qrIntent = Intent(this@CheckDeviceWifiActivity, QRScanActivity::class.java)
+                            val qrIntent = Intent(this@CheckDeviceWifiActivity, ProvisionLoading::class.java)
                             startActivity(qrIntent)
                         }
                     } else {

@@ -57,6 +57,9 @@
             android:name=".QRScanActivity"
             android:exported="false" />
         <activity
+            android:name=".StatusPageActivity"
+            android:exported="false" />
+        <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"
             android:stateNotNeeded="true"

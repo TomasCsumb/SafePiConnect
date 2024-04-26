@@ -31,10 +31,10 @@ class MainActivity : AppCompatActivity() {
 
         requestLocationPermission()
 
-        binding.menuButton.setOnClickListener {
-            val intent = Intent(this, MainMenuActivity::class.java)
-            startActivity(intent)
-        }
+//        binding.menuButton.setOnClickListener {
+//            val intent = Intent(this, MainMenuActivity::class.java)
+//            startActivity(intent)
+//        }
 
         binding.wifiButton.setOnClickListener {
 //            val intent = Intent(this, PassWiFiActivity::class.java)
