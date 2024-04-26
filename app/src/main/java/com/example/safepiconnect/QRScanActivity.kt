@@ -50,7 +50,7 @@ class QRScanActivity : AppCompatActivity() {
                 } else {
                     storeKey(this, result.contents)
                     // go to the provision loading screen
-                    val intent = Intent(this, ProvisionLoading::class.java)
+                    val intent = Intent(this, CheckDeviceWifiActivity::class.java)
                     startActivity(intent)
                 }
             }
